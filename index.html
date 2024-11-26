@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randomization Form</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        button.active:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin-top: 0;
+            gap: 5px;
+        }
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .result p {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul ul {
+            margin-top: 8px;
+        }
+        .pro-substudy-section {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+        .pro-substudy-section.visible {
+            display: block;
+        }
+        .eligibility-confirmed {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Randomization Form</h1>
+
+<form id="randomization-form">
+    <!-- Centre/Unit Name -->
+    <label for="center-name">Dialysis Unit</label>
+    <select id="center-name" name="center-name" required>
+        <option value="" disabled selected>Select Center</option>
+        <option value="center1">University Hospital</option>
+        <option value="center2">Adam Linton</option>
+        <option value="center3">Sarnia</option>
+        <option value="center4">Stratford</option>
+        <option value="center5">Tilsonburg</option>
+    </select>
+
+    <!-- Health Card Number -->
+    <label for="health-card">Health Card Number</label>
+    <input type="text" id="health-card" name="health-card" placeholder="Enter Health Card Number" required>
+    <div id="health-card-error" class="error-message">Invalid health card number (e.g., 10 digits with optional version letter).</div>
+
+    <!-- Inclusion Criteria -->
+    <label>Does the patient meet all of the following?</label>
+    <ul>
+        <li>Age 60 years or older, or age 45 to 59 years and using medication to treat diabetes</li>
+        <li>Receiving any form of dialysis regularly for the previous 3 months</li>
+        <li>Currently receiving hemodialysis in-centre (main or satellite unit) 3 or more times per week</li>
+    </ul>
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="inclusion-criteria" value="yes" required> Yes
+        </label>
+        <label>
+            <input type="radio" name="inclusion-criteria" value="no"> No
+        </label>
+    </div>
+
+    <!-- Exclusion Criteria -->
+    <label>Does the patient meet any of the following?</label>
+    <ul>
+        <li>
+            Not appropriate for this study in the opinion of the treating nephrologist or dialysis nurse practitioner due to any of:
+            <ul>
+                <li>Known or anticipated intolerance to the Nipro Elisio HX dialyzer</li>
+                <li>Planned to receive hemodiafiltration</li>
+                <li>Planned to receive nocturnal hemodialysis</li>
+                <li>
+                    Anticipated to discontinue in-centre hemodialysis in the next 3 months for any reason 
+                    (examples: palliation, transplantation, home dialysis, recovery of kidney function, death, others)
+                </li>
+                <li>Anticipated severe non-adherence to the frequency or duration of prescribed dialysis treatment</li>
+            </ul>
+        </li>
+        <li>Previously enrolled in this trial</li>
+        <li>Declined participation</li>
+    </ul>
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="exclusion-criteria" value="yes" required> Yes
+        </label>
+        <label>
+            <input type="radio" name="exclusion-criteria" value="no"> No
+        </label>
+    </div>
+
+    <!-- Date of Participant Study Notification -->
+    <label for="notification-date">Date of Participant Study Notification</label>
+    <input type="date" id="notification-date" name="notification-date" required>
+    <div id="date-error" class="error-message">Notification date must be at least 14 days ago.</div>
+
+    <!-- Eligibility confirmation message -->
+    <div id="eligibility-confirmed" class="eligibility-confirmed">
+        Patient meets all eligibility criteria
+    </div>
+
+    <!-- PRO Substudy Section -->
+    <div id="pro-substudy-section" class="pro-substudy-section">
+        <label>Has the patient consented to participate in the PRO substudy AND completed the baseline PRO assessment?</label>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="pro-participation" value="yes"> Yes
+            </label>
+            <label>
+                <input type="radio" name="pro-participation" value="no"> No
+            </label>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button id="randomize-button" type="button" onclick="randomize()">Randomize Participant</button>
+</form>
+
+<div id="randomization-result" class="hidden result">
+    <p id="study-id"></p>
+    <p id="study-allocation"></p>
+</div>
+
+<script>
+    const randomizeButton = document.getElementById('randomize-button');
+    const form = document.getElementById('randomization-form');
+    const resultDiv = document.getElementById('randomization-result');
+    const studyIdField = document.getElementById('study-id');
+    const allocationField = document.getElementById('study-allocation');
+
+    // Configuration
+    const allocations = ["Elisio HX dialyzer", "Conventional high-flux dialyzer"];
+    const proSubstudyCenters = ['center1', 'center2']; // UH and Adam Linton
+    let lastAssignedId = 1003; // Next ID will be 1004
+
+    function checkEligibility() {
+        const centerSelected = form['center-name'].value !== '';
+        const healthCardValid = /^[0-9]{10}[A-Z]?$/.test(form['health-card'].value);
+        const inclusionMet = form['inclusion-criteria'].value === 'yes';
+        const exclusionNotMet = form['exclusion-criteria'].value === 'no';
+        const notificationDateValid = validateNotificationDate();
+        
+        const isEligible = centerSelected && healthCardValid && inclusionMet && 
+                          exclusionNotMet && notificationDateValid;
+        
+        // Show/hide eligibility confirmation and PRO substudy section
+        const eligibilityConfirmed = document.getElementById('eligibility-confirmed');
+        const proSubstudySection = document.getElementById('pro-substudy-section');
+        
+        if (isEligible) {
+            eligibilityConfirmed.style.display = 'block';
+            // Show PRO substudy section only if center participates
+            if (proSubstudyCenters.includes(form['center-name'].value)) {
+                proSubstudySection.classList.add('visible');
+                // Make PRO participation required for these centers
+                const proRadios = document.getElementsByName('pro-participation');
+                Array.from(proRadios).forEach(radio => radio.required = true);
+            } else {
+                proSubstudySection.classList.remove('visible');
+                // Remove required attribute when hidden
+                const proRadios = document.getElementsByName('pro-participation');
+                Array.from(proRadios).forEach(radio => {
+                    radio.required = false;
+                    radio.checked = false;
+                });
+            }
+        } else {
+            eligibilityConfirmed.style.display = 'none';
+            proSubstudySection.classList.remove('visible');
+        }
+        
+        // Enable/disable randomize button
+        let proParticipationValid = true;
+        if (proSubstudySection.classList.contains('visible')) {
+            const proRadios = document.getElementsByName('pro-participation');
+            proParticipationValid = Array.from(proRadios).some(radio => radio.checked);
+        }
+        
+        if (isEligible && proParticipationValid) {
+            randomizeButton.classList.add('active');
+        } else {
+            randomizeButton.classList.remove('active');
+        }
+
+        // Show/hide error messages
+        document.getElementById('health-card-error').style.display = 
+            form['health-card'].value && !healthCardValid ? 'block' : 'none';
+    }
+
+    function validateNotificationDate() {
+        const notificationDate = new Date(form['notification-date'].value);
+        const today = new Date();
+        const diffInDays = (today - notificationDate) / (1000 * 60 * 60 * 24);
+        const valid = diffInDays >= 14;
+        document.getElementById('date-error').style.display = 
+            form['notification-date'].value && !valid ? 'block' : 'none';
+        return valid;
+    }
+
+    function randomize() {
+        if (!randomizeButton.classList.contains('active')) {
+            return;
+        }
+        
+        const allocation = allocations[Math.floor(Math.random() * allocations.length)];
+        lastAssignedId++;
+        const studyId = lastAssignedId.toString();
+        
+        studyIdField.textContent = `Study ID: ${studyId}`;
+        allocationField.textContent = `Study Allocation: ${allocation}`;
+        
+        // Store PRO substudy participation if applicable
+        const proParticipation = proSubstudyCenters.includes(form['center-name'].value) 
+            ? form.querySelector('input[name="pro-participation"]:checked')?.value || 'no'
+            : 'not-applicable';
+        
+        resultDiv.classList.remove('hidden');
+        form.reset();
+        randomizeButton.classList.remove('active');
+        
+        // Reset PRO substudy section and eligibility confirmation
+        const proSubstudySection = document.getElementById('pro-substudy-section');
+        proSubstudySection.classList.remove('visible');
+        document.getElementById('eligibility-confirmed').style.display = 'none';
+    }
+
+    // Event listeners
+    form.addEventListener('change', checkEligibility);
+    form['health-card'].addEventListener('input', checkEligibility);
+    form['notification-date'].addEventListener('input', checkEligibility);
+</script>
+
+</body>
+</html>
