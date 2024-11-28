@@ -62,6 +62,12 @@
             margin-bottom: 15px;
             display: none;
         }
+        .match-success {
+            border-color: #28a745 !important;
+        }
+        .match-error {
+            border-color: #dc3545 !important;
+        }
         .radio-group {
             display: flex;
             gap: 20px;
@@ -124,7 +130,6 @@
 <h1>Draft Randomization Form (this site is not live)</h1>
 
 <form id="randomization-form">
-    <!-- Centre/Unit Name -->
     <label for="center-name">Dialysis Unit</label>
     <select id="center-name" name="center-name" required>
         <option value="" disabled selected>Select Unit</option>
@@ -135,7 +140,6 @@
         <option value="center5">Tilsonburg</option>
     </select>
 
-    <!-- Health Card Number -->
     <label for="health-card">Health Card Number</label>
     <input type="text" 
            id="health-card" 
@@ -145,7 +149,16 @@
            required>
     <div id="health-card-error" class="error-message">Please enter a valid health card number in the format XXXX-XXX-XXX</div>
 
-    <!-- Inclusion Criteria -->
+    <label for="health-card-confirm">Confirm Health Card Number</label>
+    <input type="text" 
+           id="health-card-confirm" 
+           name="health-card-confirm" 
+           placeholder="XXXX-XXX-XXX"
+           maxlength="12"
+           required>
+    <div id="health-card-match-error" class="error-message">Health card numbers do not match</div>
+    <div id="health-card-mod10-error" class="error-message">Health card number fails validation check</div>
+
     <label>Does the patient meet all of the following?</label>
     <ul>
         <li>Age 60 years or older, or age 45 to 59 years and using medication to treat diabetes</li>
@@ -161,7 +174,6 @@
         </label>
     </div>
 
-    <!-- Exclusion Criteria -->
     <label>Does the patient meet any of the following?</label>
     <ul>
         <li>
@@ -189,17 +201,14 @@
         </label>
     </div>
 
-    <!-- Date of Participant Study Notification -->
     <label for="notification-date">Date of Participant Study Notification</label>
     <input type="date" id="notification-date" name="notification-date" required>
     <div id="date-error" class="error-message">Notification date must be at least 14 days ago.</div>
 
-    <!-- Eligibility confirmation message -->
     <div id="eligibility-confirmed" class="eligibility-confirmed">
         Patient meets all eligibility criteria
     </div>
 
-    <!-- PRO Substudy Section -->
     <div id="pro-substudy-section" class="pro-substudy-section">
         <label>Has the patient consented to participate in the Patient-Reported Outcomes substudy AND completed the baseline Patient-Reported Outcomes questionnaire?</label>
         <div class="radio-group">
@@ -212,7 +221,6 @@
         </div>
     </div>
 
-    <!-- Submit Button -->
     <button id="randomize-button" type="button" onclick="randomize()">Randomize Participant</button>
 </form>
 
@@ -228,16 +236,31 @@
     const studyIdField = document.getElementById('study-id');
     const allocationField = document.getElementById('study-allocation');
 
-    // Configuration
     const allocations = ["Elisio HX dialyzer", "Conventional high-flux dialyzer"];
-    const proSubstudyCenters = ['center1', 'center2']; // UH and Adam Linton
-    let lastAssignedId = 1003; // Next ID will be 1004
-    
+    const proSubstudyCenters = ['center1', 'center2'];
+    let lastAssignedId = 1003;
+
+    function mod10Check(value) {
+        const cleanValue = value.replace(/\D/g, '');
+        let sum = 0;
+        let parity = cleanValue.length % 2;
+        
+        for (let i = 0; i < cleanValue.length; i++) {
+            let digit = parseInt(cleanValue.charAt(i));
+            if (i % 2 == parity) {
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9;
+                }
+            }
+            sum += digit;
+        }
+        return (sum % 10 == 0);
+    }
+
     function formatHealthCard(input) {
-        // Remove all non-digits
         let value = input.value.replace(/\D/g, '');
         
-        // Add dashes in correct positions
         if (value.length > 4) {
             value = value.slice(0,4) + '-' + value.slice(4);
         }
@@ -245,16 +268,62 @@
             value = value.slice(0,8) + '-' + value.slice(8);
         }
         
-        // Limit to 10 digits total
         if (value.replace(/\D/g, '').length > 10) {
             value = value.slice(0, 12);
         }
         
         input.value = value;
     }
+
+    function validateHealthCards() {
+        const healthCard1 = document.getElementById('health-card');
+        const healthCard2 = document.getElementById('health-card-confirm');
+        const matchError = document.getElementById('health-card-match-error');
+        const mod10Error = document.getElementById('health-card-mod10-error');
+        const formatError = document.getElementById('health-card-error');
+        
+        const formatValid = /^\d{4}-\d{3}-\d{3}$/.test(healthCard1.value);
+        formatError.style.display = healthCard1.value && !formatValid ? 'block' : 'none';
+        
+        const matching = healthCard1.value === healthCard2.value;
+        matchError.style.display = healthCard2.value && !matching ? 'block' : 'none';
+        
+        let mod10Valid = false;
+        if (formatValid) {
+            mod10Valid = mod10Check(healthCard1.value);
+            mod10Error.style.display = !mod10Valid ? 'block' : 'none';
+        }
+        
+        if (healthCard2.value) {
+            if (matching && mod10Valid) {
+                healthCard1.classList.add('match-success');
+                healthCard2.classList.add('match-success');
+                healthCard1.classList.remove('match-error');
+                healthCard2.classList.remove('match-error');
+            } else {
+                healthCard1.classList.add('match-error');
+                healthCard2.classList.add('match-error');
+                healthCard1.classList.remove('match-success');
+                healthCard2.classList.remove('match-success');
+            }
+        }
+        
+        return formatValid && matching && mod10Valid;
+    }
+
+    function validateNotificationDate() {
+        const notificationDate = new Date(form['notification-date'].value);
+        const today = new Date();
+        const diffInDays = (today - notificationDate) / (1000 * 60 * 60 * 24);
+        const valid = diffInDays >= 14;
+        document.getElementById('date-error').style.display = 
+            form['notification-date'].value && !valid ? 'block' : 'none';
+        return valid;
+    }
+
     function checkEligibility() {
         const centerSelected = form['center-name'].value !== '';
-        const healthCardValid = /^\d{4}-\d{3}-\d{3}$/.test(form['health-card'].value);
+        const healthCardValid = validateHealthCards();
         const inclusionMet = form['inclusion-criteria'].value === 'yes';
         const exclusionNotMet = form['exclusion-criteria'].value === 'no';
         const notificationDateValid = validateNotificationDate();
@@ -262,21 +331,17 @@
         const isEligible = centerSelected && healthCardValid && inclusionMet && 
                           exclusionNotMet && notificationDateValid;
         
-        // Show/hide eligibility confirmation and PRO substudy section
         const eligibilityConfirmed = document.getElementById('eligibility-confirmed');
         const proSubstudySection = document.getElementById('pro-substudy-section');
         
         if (isEligible) {
             eligibilityConfirmed.style.display = 'block';
-            // Show PRO substudy section only if center participates
             if (proSubstudyCenters.includes(form['center-name'].value)) {
                 proSubstudySection.classList.add('visible');
-                // Make PRO participation required for these centers
                 const proRadios = document.getElementsByName('pro-participation');
                 Array.from(proRadios).forEach(radio => radio.required = true);
             } else {
                 proSubstudySection.classList.remove('visible');
-                // Remove required attribute when hidden
                 const proRadios = document.getElementsByName('pro-participation');
                 Array.from(proRadios).forEach(radio => {
                     radio.required = false;
@@ -288,7 +353,6 @@
             proSubstudySection.classList.remove('visible');
         }
         
-        // Enable/disable randomize button
         let proParticipationValid = true;
         if (proSubstudySection.classList.contains('visible')) {
             const proRadios = document.getElementsByName('pro-participation');
@@ -300,20 +364,6 @@
         } else {
             randomizeButton.classList.remove('active');
         }
-
-        // Show/hide error messages
-        document.getElementById('health-card-error').style.display = 
-            form['health-card'].value && !healthCardValid ? 'block' : 'none';
-    }
-
-    function validateNotificationDate() {
-        const notificationDate = new Date(form['notification-date'].value);
-        const today = new Date();
-        const diffInDays = (today - notificationDate) / (1000 * 60 * 60 * 24);
-        const valid = diffInDays >= 14;
-        document.getElementById('date-error').style.display = 
-            form['notification-date'].value && !valid ? 'block' : 'none';
-        return valid;
     }
 
     function randomize() {
@@ -328,7 +378,6 @@
         studyIdField.textContent = `Study ID: ${studyId}`;
         allocationField.textContent = `Study Allocation: ${allocation}`;
         
-        // Store PRO substudy participation if applicable
         const proParticipation = proSubstudyCenters.includes(form['center-name'].value) 
             ? form.querySelector('input[name="pro-participation"]:checked')?.value || 'no'
             : 'not-applicable';
@@ -337,19 +386,33 @@
         form.reset();
         randomizeButton.classList.remove('active');
         
-        // Reset PRO substudy section and eligibility confirmation
         const proSubstudySection = document.getElementById('pro-substudy-section');
         proSubstudySection.classList.remove('visible');
         document.getElementById('eligibility-confirmed').style.display = 'none';
     }
+    const healthCardInputs = [
+        document.getElementById('health-card'),
+        document.getElementById('health-card-confirm')
+    ];
 
-    // Event listeners
+    healthCardInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            formatHealthCard(this);
+            validateHealthCards();
+            checkEligibility();
+        });
+    });
+
     form.addEventListener('change', checkEligibility);
-form['health-card'].addEventListener('input', function(e) {
-    formatHealthCard(this);
-    checkEligibility(); 
-});
-form['notification-date'].addEventListener('input', checkEligibility);
+    form['notification-date'].addEventListener('input', checkEligibility);
+
+    // Initialize form state
+    document.addEventListener('DOMContentLoaded', function() {
+        checkEligibility();
+        const proSubstudySection = document.getElementById('pro-substudy-section');
+        proSubstudySection.classList.remove('visible');
+        document.getElementById('eligibility-confirmed').style.display = 'none';
+    });
 </script>
 
 </body>
